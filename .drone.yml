@@ -6,7 +6,6 @@ steps:
     image: maven:3.9.4-openjdk-17
     commands:
       - mvn help:evaluate -Dexpression=project.version -q -DforceStdout > .version
-      - echo "Using version from POM: $(cat .version)"
 
   - name: compile
     image: maven:3.9.4-openjdk-17
@@ -15,9 +14,6 @@ steps:
 
   - name: build-docker-image
     image: docker:dind
-    environment:
-      VERSION:
-        from_secret: VERSION
     commands:
       - export VERSION=$(cat .version)
       - docker build --build-arg JAR_FILE=target/bunny-scholar-${VERSION}.jar -t bunny-scholar:${VERSION} .
@@ -30,8 +26,10 @@ steps:
   - name: notify-discord-on-success
     image: appleboy/drone-discord
     settings:
-      webhook_id: 1150056343684784240
-      webhook_token: fzSgcvHCx5rNexq9WkGRXQN-yuuumzlzcKmpkbbc4UAOE8OtyJD_qY09pC8J9ivL-8lU
+      webhook_id:
+        from_secret: webhook_id
+      webhook_token:
+        from_secret: webhook_token
       text: "Build and deployment succeeded."
     when:
       status:
@@ -40,8 +38,10 @@ steps:
   - name: notify-discord-on-failure
     image: appleboy/drone-discord
     settings:
-      webhook_id: 1150056343684784240
-      webhook_token: fzSgcvHCx5rNexq9WkGRXQN-yuuumzlzcKmpkbbc4UAOE8OtyJD_qY09pC8J9ivL-8lU
+      webhook_id:
+        from_secret: webhook_id
+      webhook_token:
+        from_secret: webhook_token
       text: "Build or deployment failed."
     when:
       status:
