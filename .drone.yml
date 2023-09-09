@@ -11,15 +11,7 @@ steps:
     image: maven:3.9.4-openjdk-17
     commands:
       - mvn -s settings.xml clean install -Dmaven.test.skip=true
-  - name: build-docker-image
-    image: docker:dind
-    commands:
-      - export VERSION=$(cat .version)
-      - docker build --build-arg JAR_FILE=target/bunny-scholar-${VERSION}.jar -t bunny-scholar:${VERSION} .
-  - name: deploy
-    image: docker:dind
-    commands:
-      - docker run -d -p 8080:8080 bunny-scholar:${VERSION}
+
   - name: notify-discord-on-success
     image: appleboy/drone-discord
     settings:
