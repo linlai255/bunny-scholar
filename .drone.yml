@@ -1,31 +1,48 @@
 kind: pipeline
-type: docker
 name: default
 
 steps:
-  - name: compile
-    image: maven:3.9.4-amazoncorretto-17
+  - name: fetch-version
+    image: maven:3.9.4-openjdk-17
     commands:
-      - mvn compile
-    when:
-      event:
-        - custom
+      - mvn help:evaluate -Dexpression=project.version -q -DforceStdout > .version
+      - echo "Using version from POM: $(cat .version)"
+
+  - name: compile
+    image: maven:3.9.4-openjdk-17
+    commands:
+      - mvn -s settings.xml clean install -Dmaven.test.skip=true
+
+  - name: build-docker-image
+    image: docker:dind
+    environment:
+      VERSION:
+        from_secret: VERSION
+    commands:
+      - export VERSION=$(cat .version)
+      - docker build --build-arg JAR_FILE=target/bunny-scholar-${VERSION}.jar -t bunny-scholar:${VERSION} .
 
   - name: deploy
-    image: maven:3.9.4-amazoncorretto-17
+    image: docker:dind
     commands:
-      - mvn deploy
-    when:
-      event:
-        - custom
+      - docker run -d -p 8080:8080 bunny-scholar:${VERSION}
 
-notify:
-  - name: discord_notify
+  - name: notify-discord-on-success
     image: appleboy/drone-discord
     settings:
-      webhook_id:
-        from_secret: 1149981286371446815
-      webhook_token:
-        from_secret: aOYMldmQQOtKK82tnaYwDRzFy0pgbMAT2GMsLMQs5V-Jbojt6CTgCYkZmk_nxmlF80OO
+      webhook_id: 1150056343684784240
+      webhook_token: fzSgcvHCx5rNexq9WkGRXQN-yuuumzlzcKmpkbbc4UAOE8OtyJD_qY09pC8J9ivL-8lU
+      text: "Build and deployment succeeded."
     when:
-      status: [ success, failure ]
+      status:
+        - success
+
+  - name: notify-discord-on-failure
+    image: appleboy/drone-discord
+    settings:
+      webhook_id: 1150056343684784240
+      webhook_token: fzSgcvHCx5rNexq9WkGRXQN-yuuumzlzcKmpkbbc4UAOE8OtyJD_qY09pC8J9ivL-8lU
+      text: "Build or deployment failed."
+    when:
+      status:
+        - failure
