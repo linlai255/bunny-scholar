@@ -4,7 +4,7 @@ type: docker
 
 steps:
   - name: fetch-version
-    image: maven:3.9.4-openjdk-17
+    image: maven:3.9.4-amazoncorretto-17
     commands:
       - mvn help:evaluate -Dexpression=project.version -q -DforceStdout > .version
   - name: compile
