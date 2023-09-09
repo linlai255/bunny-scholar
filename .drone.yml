@@ -27,10 +27,8 @@ steps:
   - name: notify-discord-on-success
     image: appleboy/drone-discord
     settings:
-      webhook_id:
-        from_secret: webhook_id
-      webhook_token:
-        from_secret: webhook_token
+      webhook_id: "1150056343684784240"
+      webhook_token: "fzSgcvHCx5rNexq9WkGRXQN-yuuumzlzcKmpkbbc4UAOE8OtyJD_qY09pC8J9ivL-8lU"
       text: "Build and deployment succeeded."
     when:
       status:
@@ -39,10 +37,8 @@ steps:
   - name: notify-discord-on-failure
     image: appleboy/drone-discord
     settings:
-      webhook_id:
-        from_secret: webhook_id
-      webhook_token:
-        from_secret: webhook_token
+      webhook_id: "1150056343684784240"
+      webhook_token: "fzSgcvHCx5rNexq9WkGRXQN-yuuumzlzcKmpkbbc4UAOE8OtyJD_qY09pC8J9ivL-8lU"
       text: "Build or deployment failed."
     when:
       status:
